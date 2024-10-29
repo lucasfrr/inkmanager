@@ -1,0 +1,28 @@
+services:
+
+  inkmanager-api:
+    image: inkmanager
+    entrypoint: ./entrypoint.sh
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:senhadodb@inkmanager-db:5432/inkdb
+    depends_on:
+      - inkmanager-db
+
+  inkmanager-db:
+    image: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: inkdb
+      POSTGRES_PASSWORD: senhadodb
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
