@@ -37,6 +37,18 @@ def list_products(session: Session):
     return {'products': products}
 
 
+@router.get('/{product_id}', response_model=ProductPublic)
+def get_product_by_id(session: Session, product_id: str):
+    product = session.scalar(
+        select(Product).where(Product.id == product_id)
+    )
+
+    if not product:
+        raise HTTPException(status_code=404, detail='product not found')
+    
+    return product
+
+
 @router.patch('/update/{product_id}', response_model=ProductPublic)
 def update_product(product_id: str, product: ProductUpdate, session: Session):
     db_product = session.scalar(
