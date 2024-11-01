@@ -34,7 +34,7 @@ def test_change_product_amount(client, session):
     amount = 2
 
     response = client.patch(
-        f'/update/{product.id}',
+        f'/products/update/{product.id}',
         json={
             'amount': amount
         }
@@ -42,3 +42,15 @@ def test_change_product_amount(client, session):
 
     assert response.status_code == HTTPStatus.OK
     assert response.json()['amount'] == amount
+
+
+def test_delete_product(client, session):
+    product = ProductFactory()
+
+    session.add(product)
+    session.commit()
+
+    response = client.delete(f'/products/delete/{product.id}')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'detail': 'task has been deleted successful'}
