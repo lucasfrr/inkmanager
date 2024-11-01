@@ -5,7 +5,6 @@ from enum import Enum
 from sqlalchemy import func, text, types
 from sqlalchemy.orm import Mapped, mapped_column, registry
 
-
 table_registry = registry()
 
 
