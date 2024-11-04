@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class Message(BaseModel):
@@ -28,3 +28,18 @@ class ProductList(BaseModel):
 class ProductUpdate(BaseModel):
     name: str | None = None
     amount: int | None = None
+
+
+class UserSchema(BaseModel):
+    fullname: str
+    username: str
+    email: EmailStr
+    password: str
+
+
+class UserPublic(BaseModel):
+    id: uuid.UUID
+    username: str
+    email: EmailStr
+    fullname: str
+    model_config = ConfigDict(from_attributes=True)

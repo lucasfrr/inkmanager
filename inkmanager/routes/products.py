@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -19,7 +20,9 @@ Session = Annotated[Session, Depends(get_session)]
 router = APIRouter(prefix='/products', tags=['products'])
 
 
-@router.post('/create', response_model=ProductPublic, status_code=201)
+@router.post(
+    '/create', response_model=ProductPublic, status_code=HTTPStatus.CREATED
+)
 def create_product(product: ProductSchema, session: Session):
     db_product: Product = Product(name=product.name, amount=product.amount)
 
@@ -42,7 +45,9 @@ def get_product_by_id(session: Session, product_id: str):
     product = session.scalar(select(Product).where(Product.id == product_id))
 
     if not product:
-        raise HTTPException(status_code=404, detail='product not found')
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='product not found'
+        )
 
     return product
 
@@ -54,7 +59,9 @@ def update_product(product_id: str, product: ProductUpdate, session: Session):
     )
 
     if not db_product:
-        raise HTTPException(status_code=404, detail='product not found')
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='product not found'
+        )
 
     for key, value in product.model_dump(exclude_unset=True).items():
         setattr(db_product, key, value)
@@ -71,7 +78,9 @@ def delete_product(product_id: str, session: Session):
     product = session.scalar(select(Product).where(Product.id == product_id))
 
     if not product:
-        raise HTTPException(status_code=404, detail='product not found')
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='product not found'
+        )
 
     session.delete(product)
     session.commit()

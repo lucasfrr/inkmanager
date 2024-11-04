@@ -13,6 +13,9 @@ pydantic-settings = "^2.6.0"
 psycopg = {extras = ["binary"], version = "^3.2.3"}
 alembic = "^1.13.3"
 psycopg2-binary = "^2.9.10"
+pyjwt = "^2.9.0"
+pwdlib = {extras = ["argon2"], version = "^0.2.1"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 
 [tool.poetry.group.dev.dependencies]

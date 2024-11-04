@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import func, text, types
-from sqlalchemy.orm import Mapped, mapped_column, registry
+from sqlalchemy import ForeignKey, func, text, types
+from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
 table_registry = registry()
 
@@ -64,6 +64,32 @@ class NeedleSize(str, Enum):
 
 
 @table_registry.mapped_as_dataclass
+class User:
+    __tablename__ = 'users'
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        types.Uuid,
+        primary_key=True,
+        init=False,
+        server_default=text('gen_random_uuid()'),
+    )
+    username: Mapped[str] = mapped_column(unique=True)
+    password: Mapped[str]
+    email: Mapped[str] = mapped_column(unique=True)
+    fullname: Mapped[str]
+
+    products: Mapped[list['Product']] = relationship(
+        init=False, back_populates='user', cascade='all, delete-orphan'
+    )
+    inks: Mapped[list['Ink']] = relationship(
+        init=False, back_populates='user', cascade='all, delete-orphan'
+    )
+    needles: Mapped[list['Needle']] = relationship(
+        init=False, back_populates='user', cascade='all, delete-orphan'
+    )
+
+
+@table_registry.mapped_as_dataclass
 class Product:
     __tablename__ = 'products'
 
@@ -81,6 +107,9 @@ class Product:
     updated_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now(), onupdate=func.now()
     )
+
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user: Mapped[User] = relationship(init=False, back_populates='products')
 
 
 @table_registry.mapped_as_dataclass
@@ -104,10 +133,13 @@ class Ink:
         init=False, server_default=func.now(), onupdate=func.now()
     )
 
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user: Mapped[User] = relationship(init=False, back_populates='inks')
+
 
 @table_registry.mapped_as_dataclass
-class Neddle:
-    __tablename__ = 'neddles'
+class Needle:
+    __tablename__ = 'needles'
 
     id: Mapped[uuid.UUID] = mapped_column(
         types.Uuid,
@@ -126,3 +158,6 @@ class Neddle:
     updated_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now(), onupdate=func.now()
     )
+
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user: Mapped[User] = relationship(init=False, back_populates='needles')
