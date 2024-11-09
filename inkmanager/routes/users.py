@@ -3,12 +3,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from inkmanager.database import get_session
 from inkmanager.models import User
 from inkmanager.schemas import Message, UserPublic, UserSchema
-from inkmanager.security import get_password_hash
+from inkmanager.security import get_current_user, get_password_hash
 
 Session = Annotated[Session, Depends(get_session)]
 
@@ -24,8 +25,6 @@ def register_user(user: UserSchema, session: Session):
             (User.email == user.email) | (User.username == user.username)
         )
     )
-
-    print('verificou o user')
 
     if db_user:
         if db_user.username == user.username:
@@ -55,35 +54,49 @@ def register_user(user: UserSchema, session: Session):
     return db_user
 
 
-@router.patch('/update/{user_id}', response_model=UserPublic)
-def update_user(user_id: str, user: UserSchema, session: Session):
-    db_user = session.scalar(select(User).where(User.id == user_id))
-
-    if not db_user:
+@router.put('/update/{user_id}', response_model=UserPublic)
+def update_user(
+    user_id: str,
+    user: UserSchema,
+    session: Session,
+    current_user: User = Depends(get_current_user),
+):
+    if str(current_user.id) != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='user not found'
+            status_code=HTTPStatus.FORBIDDEN, detail='not enough permissions'
         )
 
-    for key, value in user.model_dump(exclude_unset=True).items():
-        setattr(db_user, key, value)
+    try:
+        for key, value in user.model_dump(exclude_unset=True).items():
+            if key == 'password':
+                current_user.password = get_password_hash(value)
 
-    session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+            setattr(current_user, key, value)
 
-    return db_user
+        session.add(current_user)
+        session.commit()
+        session.refresh(current_user)
+
+        return current_user
+    except IntegrityError:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail='username or email already exists',
+        )
 
 
 @router.delete('/delete/{user_id}', response_model=Message)
-def delete_user(user_id: str, session: Session):
-    user = session.scalar(select(User).where(User.id == user_id))
-
-    if not user:
+def delete_user(
+    user_id: str,
+    session: Session,
+    current_user: User = Depends(get_current_user),
+):
+    if str(current_user.id) != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='user not found'
+            status_code=HTTPStatus.FORBIDDEN, detail='not enough permissions'
         )
 
-    session.delete(user)
+    session.delete(current_user)
     session.commit()
 
     return {'detail': 'user has been deleted'}
