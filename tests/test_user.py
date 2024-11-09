@@ -32,3 +32,13 @@ def test_update_user(client, user, token):
     assert response.status_code == HTTPStatus.OK
     assert response.json()['username'] == 'toniboy'
     assert response.json()['email'] == 'toniboy@test.com'
+
+
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/delete/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'detail': 'user has been deleted'}
