@@ -15,3 +15,20 @@ def test_create_user(client):
     assert response.status_code == HTTPStatus.CREATED
     assert response.json()['email'] == 'joao@gmail.com'
     assert response.json()['username'] == 'joao'
+
+
+def test_update_user(client, user, token):
+    response = client.put(
+        f'/users/update/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'toniboy',
+            'email': 'toniboy@test.com',
+            'password': 'senha nova',
+            'fullname': 'Toni Boy',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['username'] == 'toniboy'
+    assert response.json()['email'] == 'toniboy@test.com'
