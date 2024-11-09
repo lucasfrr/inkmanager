@@ -11,6 +11,7 @@ from inkmanager.models import User
 from inkmanager.schemas import Token
 from inkmanager.security import (
     create_access_token,
+    get_current_user,
     verify_password,
 )
 
@@ -39,3 +40,10 @@ def login_for_access_token(form_data: OAuth2Form, session: Session):
     access_token = create_access_token(data={'sub': user.email})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@router.post('/refresh_token', response_model=Token)
+def refresh_token(user: User = Depends(get_current_user)):
+    new_token = create_access_token(data={'sub': user.email})
+
+    return {'access_token': new_token, 'token_type': 'bearer'}
