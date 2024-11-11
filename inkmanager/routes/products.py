@@ -1,21 +1,25 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from inkmanager.database import get_session
-from inkmanager.models import Product
+from inkmanager.models import Product, User
 from inkmanager.schemas import (
+    FilterPage,
     Message,
     ProductList,
     ProductPublic,
     ProductSchema,
     ProductUpdate,
 )
+from inkmanager.security import get_current_user
 
 Session = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
+FilterProducts = Annotated[FilterPage, Query()]
 
 router = APIRouter(prefix='/products', tags=['products'])
 
@@ -23,8 +27,12 @@ router = APIRouter(prefix='/products', tags=['products'])
 @router.post(
     '/create', response_model=ProductPublic, status_code=HTTPStatus.CREATED
 )
-def create_product(product: ProductSchema, session: Session):
-    db_product: Product = Product(name=product.name, amount=product.amount)
+def create_product(
+    product: ProductSchema, session: Session, user: CurrentUser
+):
+    db_product = Product(
+        name=product.name, amount=product.amount, user_id=user.id
+    )
 
     session.add(db_product)
     session.commit()
@@ -34,15 +42,26 @@ def create_product(product: ProductSchema, session: Session):
 
 
 @router.get('/', response_model=ProductList)
-def list_products(session: Session):
-    products = session.scalars(select(Product)).all()
+def list_products(
+    session: Session, user: CurrentUser, filter_products: FilterProducts
+):
+    products = session.scalars(
+        select(Product)
+        .where(Product.user_id == user.id)
+        .offset(filter_products.offset)
+        .limit(filter_products.limit)
+    ).all()
 
     return {'products': products}
 
 
 @router.get('/{product_id}', response_model=ProductPublic)
-def get_product_by_id(session: Session, product_id: str):
-    product = session.scalar(select(Product).where(Product.id == product_id))
+def get_product_by_id(session: Session, product_id: str, user: CurrentUser):
+    product = session.scalar(
+        select(Product).where(
+            Product.id == product_id, Product.user_id == user.id
+        )
+    )
 
     if not product:
         raise HTTPException(
@@ -53,9 +72,16 @@ def get_product_by_id(session: Session, product_id: str):
 
 
 @router.patch('/update/{product_id}', response_model=ProductPublic)
-def update_product(product_id: str, product: ProductUpdate, session: Session):
+def update_product(
+    product_id: str,
+    product: ProductUpdate,
+    session: Session,
+    user: CurrentUser,
+):
     db_product = session.scalar(
-        select(Product).where(Product.id == product_id)
+        select(Product).where(
+            Product.id == product_id, Product.user_id == user.id
+        )
     )
 
     if not db_product:

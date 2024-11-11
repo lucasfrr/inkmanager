@@ -4,6 +4,11 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 
+class FilterPage(BaseModel):
+    offset: int = 0
+    limit: int = 20
+
+
 class Message(BaseModel):
     detail: str
 
