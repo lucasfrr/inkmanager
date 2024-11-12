@@ -4,7 +4,7 @@ from uuid import uuid4
 
 def test_create_user(client):
     response = client.post(
-        '/users/register',
+        url='/users/register',
         json={
             'username': 'joao',
             'email': 'joao@gmail.com',
@@ -20,7 +20,7 @@ def test_create_user(client):
 
 def test_update_user(client, user, token):
     response = client.put(
-        f'/users/update/{user.id}',
+        url=f'/users/update/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'toniboy',
@@ -38,7 +38,7 @@ def test_update_user(client, user, token):
 def test_update_user_with_wrong_user(client, token):
     wrong_id = str(uuid4())
     response = client.put(
-        f'/users/update/{wrong_id}',
+        url=f'/users/update/{wrong_id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'toniboy',
@@ -54,7 +54,7 @@ def test_update_user_with_wrong_user(client, token):
 
 def test_delete_user(client, user, token):
     response = client.delete(
-        f'/users/delete/{user.id}',
+        url=f'/users/delete/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -64,7 +64,7 @@ def test_delete_user(client, user, token):
 
 def test_delete_user_with_wrong_user(client, other_user, token):
     response = client.delete(
-        f'/users/delete/{other_user.id}',
+        url=f'/users/delete/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 

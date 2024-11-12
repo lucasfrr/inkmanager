@@ -40,16 +40,12 @@ def test_list_all_inks(client, session, user, token):
 def test_list_inks_should_return_5(client, user, token, session):
     expected = 5
 
-    session.bulk_save_objects(
-        InkFactory.create_batch(
-            6, user_id=user.id
-        )
-    )
+    session.bulk_save_objects(InkFactory.create_batch(6, user_id=user.id))
     session.commit()
 
     response = client.get(
         url='/inks/?offset=1&limit=5',
-        headers={'Authorization': f'Bearer {token}'}
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -66,7 +62,7 @@ def test_link_inks_by_brand_should_return_3(client, user, token, session):
 
     response = client.get(
         url='/inks/?brand=electric ink',
-        headers={'Authorization': f'Bearer {token}'}
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -75,9 +71,7 @@ def test_link_inks_by_brand_should_return_3(client, user, token, session):
 
 def test_change_ink(client, session, user, token):
     ink = InkFactory.create(
-        brand='Electric Ink',
-        color='Reddish',
-        user_id=user.id
+        brand='Electric Ink', color='Reddish', user_id=user.id
     )
 
     session.add(ink)
@@ -86,11 +80,7 @@ def test_change_ink(client, session, user, token):
     response = client.patch(
         url=f'/inks/update/{ink.id}',
         headers={'Authorization': f'Bearer {token}'},
-        json={
-            'brand': 'Solid Ink',
-            'color': 'Magenta',
-            'weight': '30ml'
-        }
+        json={'brand': 'Solid Ink', 'color': 'Magenta', 'weight': '30ml'},
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -103,11 +93,7 @@ def test_change_wrong_ink(client, token):
     response = client.patch(
         url='/inks/update/588e7991-ccb1-481b-aa11-048a387744ab',
         headers={'Authorization': f'Bearer {token}'},
-        json={
-            'brand': 'Solid Ink',
-            'color': 'Magenta',
-            'weight': '30ml'
-        }
+        json={'brand': 'Solid Ink', 'color': 'Magenta', 'weight': '30ml'},
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -122,7 +108,7 @@ def test_delete_ink(client, session, user, token):
 
     response = client.delete(
         url=f'/inks/delete/{ink.id}',
-        headers={'Authorization': f'Bearer {token}'}
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.OK
