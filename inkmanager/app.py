@@ -10,6 +10,6 @@ app.include_router(products.router)
 app.include_router(users.router)
 
 
-@app.get('/')
-def opa():
-    return {'message': 'opa'}
+@app.get('/healthcheck')
+def healtcheck():
+    return {'healthy': 'yes!'}
