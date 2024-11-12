@@ -125,7 +125,8 @@ class Ink:
     name: Mapped[str]
     brand: Mapped[str]
     color: Mapped[str]
-    weight: Mapped[int]
+    weight: Mapped[str]
+    in_use: Mapped[bool]
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
