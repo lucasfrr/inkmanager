@@ -57,3 +57,34 @@ class UserPublic(BaseModel):
     email: EmailStr
     fullname: str
     model_config = ConfigDict(from_attributes=True)
+
+
+class InkSchema(BaseModel):
+    name: str
+    brand: str
+    color: str
+    weight: str
+    in_use: bool
+
+
+class InkPublic(BaseModel):
+    id: uuid.UUID
+    name: str
+    brand: str
+    color: str
+    weight: str
+    in_use: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class InkList(BaseModel):
+    inks: list[InkPublic]
+
+
+class InkUpdate(BaseModel):
+    name: str | None = None
+    brand: str | None = None
+    color: str | None = None
+    weight: str | None = None
+    in_use: bool | None = None
