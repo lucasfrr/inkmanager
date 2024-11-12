@@ -17,18 +17,20 @@ from inkmanager.schemas import (
 )
 from inkmanager.security import get_current_user
 
-Session = Annotated[Session, Depends(get_session)]
+DBSession = Annotated[Session, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
-FilterProducts = Annotated[FilterPage, Query()]
+Filter = Annotated[FilterPage, Query()]
 
 router = APIRouter(prefix='/products', tags=['products'])
 
 
 @router.post(
-    '/create', response_model=ProductPublic, status_code=HTTPStatus.CREATED
+    path='/create',
+    response_model=ProductPublic,
+    status_code=HTTPStatus.CREATED,
 )
 def create_product(
-    product: ProductSchema, session: Session, user: CurrentUser
+    product: ProductSchema, session: DBSession, user: CurrentUser
 ):
     db_product = Product(
         name=product.name, amount=product.amount, user_id=user.id
@@ -41,9 +43,9 @@ def create_product(
     return db_product
 
 
-@router.get('/', response_model=ProductList)
+@router.get(path='/', response_model=ProductList)
 def list_products(
-    session: Session, user: CurrentUser, filter_products: FilterProducts
+    session: DBSession, user: CurrentUser, filter_products: Filter
 ):
     products = session.scalars(
         select(Product)
@@ -55,8 +57,8 @@ def list_products(
     return {'products': products}
 
 
-@router.get('/{product_id}', response_model=ProductPublic)
-def get_product_by_id(session: Session, product_id: str, user: CurrentUser):
+@router.get(path='/{product_id}', response_model=ProductPublic)
+def get_product_by_id(session: DBSession, product_id: str, user: CurrentUser):
     product = session.scalar(
         select(Product).where(
             Product.id == product_id, Product.user_id == user.id
@@ -71,11 +73,11 @@ def get_product_by_id(session: Session, product_id: str, user: CurrentUser):
     return product
 
 
-@router.patch('/update/{product_id}', response_model=ProductPublic)
+@router.patch(path='/update/{product_id}', response_model=ProductPublic)
 def update_product(
     product_id: str,
     product: ProductUpdate,
-    session: Session,
+    session: DBSession,
     user: CurrentUser,
 ):
     db_product = session.scalar(
@@ -99,8 +101,8 @@ def update_product(
     return db_product
 
 
-@router.delete('/delete/{product_id}', response_model=Message)
-def delete_product(product_id: str, session: Session):
+@router.delete(path='/delete/{product_id}', response_model=Message)
+def delete_product(product_id: str, session: DBSession):
     product = session.scalar(select(Product).where(Product.id == product_id))
 
     if not product:
@@ -111,4 +113,4 @@ def delete_product(product_id: str, session: Session):
     session.delete(product)
     session.commit()
 
-    return {'detail': 'task has been deleted successful'}
+    return {'detail': 'product has been deleted'}

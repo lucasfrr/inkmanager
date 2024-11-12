@@ -11,15 +11,16 @@ from inkmanager.models import User
 from inkmanager.schemas import Message, UserPublic, UserSchema
 from inkmanager.security import get_current_user, get_password_hash
 
-Session = Annotated[Session, Depends(get_session)]
+DBSession = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(prefix='/users', tags=['users'])
 
 
 @router.post(
-    '/register', response_model=UserPublic, status_code=HTTPStatus.CREATED
+    path='/register', response_model=UserPublic, status_code=HTTPStatus.CREATED
 )
-def register_user(user: UserSchema, session: Session):
+def register_user(user: UserSchema, session: DBSession):
     db_user = session.scalar(
         select(User).where(
             (User.email == user.email) | (User.username == user.username)
@@ -54,12 +55,12 @@ def register_user(user: UserSchema, session: Session):
     return db_user
 
 
-@router.put('/update/{user_id}', response_model=UserPublic)
+@router.put(path='/update/{user_id}', response_model=UserPublic)
 def update_user(
     user_id: str,
     user: UserSchema,
-    session: Session,
-    current_user: User = Depends(get_current_user),
+    session: DBSession,
+    current_user: CurrentUser,
 ):
     if str(current_user.id) != user_id:
         raise HTTPException(
@@ -85,11 +86,11 @@ def update_user(
         )
 
 
-@router.delete('/delete/{user_id}', response_model=Message)
+@router.delete(path='/delete/{user_id}', response_model=Message)
 def delete_user(
     user_id: str,
-    session: Session,
-    current_user: User = Depends(get_current_user),
+    session: DBSession,
+    current_user: CurrentUser,
 ):
     if str(current_user.id) != user_id:
         raise HTTPException(

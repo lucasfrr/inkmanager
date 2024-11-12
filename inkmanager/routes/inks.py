@@ -17,8 +17,8 @@ from inkmanager.schemas import (
 )
 from inkmanager.security import get_current_user
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
 DBSession = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 Filter = Annotated[FilterPage, Query()]
 
 router = APIRouter(prefix='/inks', tags=['ink'])

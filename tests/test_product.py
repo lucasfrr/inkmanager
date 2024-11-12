@@ -119,7 +119,7 @@ def test_delete_product(client, session, user, token):
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'detail': 'task has been deleted successful'}
+    assert response.json() == {'detail': 'product has been deleted'}
 
 
 def test_delete_wrong_product(client, token):

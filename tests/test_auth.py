@@ -19,7 +19,7 @@ def test_get_token(client, user):
 def test_token_expired_after_time(client, user):
     with freeze_time('2024-11-09 12:00:00'):
         response = client.post(
-            '/auth/token',
+            url='/auth/token',
             data={'username': user.email, 'password': user.clean_password},
         )
 
@@ -28,7 +28,7 @@ def test_token_expired_after_time(client, user):
 
     with freeze_time('2024-11-09 12:31:00'):
         response = client.put(
-            f'/users/update/{user.id}',
+            url=f'/users/update/{user.id}',
             headers={'Authorization': f'Bearer {token}'},
             json={
                 'username': 'toniboy',
@@ -44,7 +44,7 @@ def test_token_expired_after_time(client, user):
 
 def test_token_inexistent_user(client):
     response = client.post(
-        '/auth/token',
+        url='/auth/token',
         data={'username': 'no_user@no_domain.com', 'password': 'testtest'},
     )
 
@@ -54,7 +54,7 @@ def test_token_inexistent_user(client):
 
 def test_token_wrong_password(client, user):
     response = client.post(
-        '/auth/token',
+        url='/auth/token',
         data={'username': user.email, 'password': 'essanaoeasenhad'},
     )
 
@@ -62,9 +62,9 @@ def test_token_wrong_password(client, user):
     assert response.json() == {'detail': 'incorrect email or password'}
 
 
-def test_refresh_token(client, user, token):
+def test_refresh_token(client, token):
     response = client.post(
-        '/auth/refresh_token', headers={'Authorization': f'Bearer {token}'}
+        url='/auth/refresh_token', headers={'Authorization': f'Bearer {token}'}
     )
 
     data = response.json()
@@ -78,7 +78,7 @@ def test_refresh_token(client, user, token):
 def test_token_expired_dont_refresh(client, user):
     with freeze_time('2024-11-09 12:00:00'):
         response = client.post(
-            '/auth/token',
+            url='/auth/token',
             data={'username': user.email, 'password': user.clean_password},
         )
 
@@ -87,7 +87,8 @@ def test_token_expired_dont_refresh(client, user):
 
     with freeze_time('2024-11-09 12:31:00'):
         response = client.post(
-            '/auth/refresh_token', headers={'Authorization': f'Bearer {token}'}
+            url='/auth/refresh_token',
+            headers={'Authorization': f'Bearer {token}'},
         )
 
         assert response.status_code == HTTPStatus.UNAUTHORIZED
