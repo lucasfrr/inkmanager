@@ -88,3 +88,34 @@ class InkUpdate(BaseModel):
     color: str | None = None
     weight: str | None = None
     in_use: bool | None = None
+
+
+class NeedleSchema(BaseModel):
+    name: str
+    brand: str
+    model: str
+    size: str
+    amount: int
+
+
+class NeedlePublic(BaseModel):
+    id: uuid.UUID
+    name: str
+    brand: str
+    model: str
+    size: str
+    amount: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class NeddleList(BaseModel):
+    needles: list[NeedlePublic]
+
+
+class NeedleUpdate(BaseModel):
+    name: str | None = None
+    brand: str | None = None
+    model: str | None = None
+    size: str | None = None
+    amount: int | None = None
