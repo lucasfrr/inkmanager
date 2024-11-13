@@ -21,6 +21,31 @@ def test_create_product(client, token, user):
     assert response.json()['amount'] == amount
 
 
+def test_get_product_by_id(client, session, user, token):
+    product = ProductFactory.create(user_id=user.id)
+
+    session.add(product)
+    session.commit()
+
+    response = client.get(
+        url=f'/products/product/{product.id}',
+        headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['id'] == str(product.id)
+
+
+def test_get_inexistent_product_by_(client, token):
+    response = client.get(
+        url='/products/product/588e7991-ccb1-481b-aa11-048a387744ab',
+        headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'product not found'}
+
+
 def test_list_products(client, session, user):
     expected_products = 3
     session.bulk_save_objects(ProductFactory.create_batch(3, user_id=user.id))

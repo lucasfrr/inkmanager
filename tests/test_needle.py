@@ -24,7 +24,7 @@ def test_create_needle(client, user, token):
     assert response.json()['size'] == '1009'
 
 
-def test_get_needle(client, session, token, user):
+def test_get_needle_by_id(client, session, token, user):
     needle = NeedleFactory.create(user_id=user.id)
 
     session.add(needle)
@@ -33,7 +33,7 @@ def test_get_needle(client, session, token, user):
     needle_id = str(needle.id)
 
     response = client.get(
-        url=f'/needles/{needle.id}',
+        url=f'/needles/needle/{needle.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -41,9 +41,9 @@ def test_get_needle(client, session, token, user):
     assert response.json()['id'] == needle_id
 
 
-def test_inexistent_needle(client, token):
+def test_get_inexistent_needle(client, token):
     response = client.get(
-        url='/needles/588e7991-ccb1-481b-aa11-048a387744ab',
+        url='/needles/needle/588e7991-ccb1-481b-aa11-048a387744ab',
         headers={'Authorization': f'Bearer {token}'},
     )
 

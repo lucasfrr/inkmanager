@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from uuid import uuid4
 
+from .factories import UserFactory
+
 
 def test_create_user(client):
     response = client.post(
@@ -16,6 +18,46 @@ def test_create_user(client):
     assert response.status_code == HTTPStatus.CREATED
     assert response.json()['email'] == 'joao@gmail.com'
     assert response.json()['username'] == 'joao'
+
+
+def test_try_create_user_with_an_existing_email(client, session):
+    user = UserFactory.create(email='yamandu@gmail.com')
+
+    session.add(user)
+    session.commit()
+
+    response = client.post(
+        url='/users/register',
+        json={
+            'username': 'yamanducosta',
+            'email': 'yamandu@gmail.com',
+            'fullname': 'Yamandu Costa',
+            'password': 'nossasenha'
+        }
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'email already exists'}
+
+
+def test_try_create_user_with_an_existing_username(client, session):
+    user = UserFactory.create(username='kikoloureiro')
+
+    session.add(user)
+    session.commit()
+
+    response = client.post(
+        url='/users/register',
+        json={
+            'username': 'kikoloureiro',
+            'email': 'kikoloureiro@gmail.com',
+            'fullname': 'Kiko Loureiro',
+            'password': 'tuasenha'
+        }
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'username already exists'}
 
 
 def test_update_user(client, user, token):

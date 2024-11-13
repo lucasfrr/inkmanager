@@ -24,6 +24,30 @@ def test_create_ink(client, token, user):
     assert response.json()['weight'] == '15g'
 
 
+def test_get_ink_by_id(client, session, user, token):
+    ink = InkFactory.create(user_id=user.id)
+
+    session.add(ink)
+    session.commit()
+
+    response = client.get(
+        url=f'/inks/ink/{ink.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['id'] == str(ink.id)
+
+
+def test_get_inexistent_ink(client, token):
+    response = client.get(
+        url='/inks/ink/588e7991-ccb1-481b-aa11-048a387744ab',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'ink not found'}
+
+
 def test_list_all_inks(client, session, user, token):
     expected = 10
     session.bulk_save_objects(InkFactory.create_batch(10, user_id=user.id))
