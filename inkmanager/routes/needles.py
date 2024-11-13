@@ -56,7 +56,7 @@ def list_needles(session: DBSession, user: CurrentUser, filter: Filter):
     return {'needles': needles}
 
 
-@router.get('/{needle_id}', response_model=NeedlePublic)
+@router.get('/needle/{needle_id}', response_model=NeedlePublic)
 def get_needle_by_id(needle_id: str, session: DBSession, user: CurrentUser):
     needle = session.scalar(
         select(Needle).where(Needle.id == needle_id, Needle.user_id == user.id)
