@@ -56,7 +56,7 @@ def list_inks(session: DBSession, user: CurrentUser, filter: Filter):
     return {'inks': inks}
 
 
-@router.get(path='/{ink_id}', response_model=InkPublic)
+@router.get(path='/ink/{ink_id}', response_model=InkPublic)
 def get_ink_by_id(session: DBSession, user: CurrentUser, ink_id: str):
     ink = session.scalar(
         select(Ink).where(Ink.id == ink_id, Ink.user_id == user.id)

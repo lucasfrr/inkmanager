@@ -57,7 +57,7 @@ def list_products(
     return {'products': products}
 
 
-@router.get(path='/{product_id}', response_model=ProductPublic)
+@router.get(path='/product/{product_id}', response_model=ProductPublic)
 def get_product_by_id(session: DBSession, product_id: str, user: CurrentUser):
     product = session.scalar(
         select(Product).where(
